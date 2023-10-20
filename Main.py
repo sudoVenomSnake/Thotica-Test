@@ -23,6 +23,15 @@ def join(source_dir, prefix, dest_file, read_size):
         input_file.close()
     output_file.close()
 
+@st.cache_resource
+def create_retriever():
+    index = load_index_from_storage(storage_context = StorageContext.from_defaults(
+                docstore = SimpleDocumentStore.from_persist_dir(persist_dir = "prod_index"),
+                vector_store = FaissVectorStore.from_persist_dir(persist_dir = "prod_index"),
+                index_store = SimpleIndexStore.from_persist_dir(persist_dir = "prod_index"),
+            ))
+    return index.as_retriever(retriever_mode = 'embedding', similarity_top_k = int(top_k))
+
 st.title('Thothica Search Experimental')
 
 if 'docstore.json' not in os.listdir('prod_index') or 'vector_store.json' not in os.listdir('prod_index'):
@@ -33,13 +42,9 @@ if 'docstore.json' not in os.listdir('prod_index') or 'vector_store.json' not in
 query = st.text_input(label = 'Please enter your query - ', value = 'What causes ocean acidification?')
 top_k = st.number_input(label = 'Top k - ', min_value = 2, max_value = 25, value = 5)
 
+retriever = create_retriever()
+
 if query and top_k:
-    index = load_index_from_storage(storage_context = StorageContext.from_defaults(
-                docstore = SimpleDocumentStore.from_persist_dir(persist_dir = "prod_index"),
-                vector_store = FaissVectorStore.from_persist_dir(persist_dir = "prod_index"),
-                index_store = SimpleIndexStore.from_persist_dir(persist_dir = "prod_index"),
-            ))
-    retriever = index.as_retriever(retriever_mode = 'embedding', similarity_top_k = int(top_k))
     response = {}
     for i in retriever.retrieve(query):
         response[str(i.id_)] = {
