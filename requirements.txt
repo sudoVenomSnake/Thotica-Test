@@ -3,4 +3,4 @@ langchain
 openai
 streamlit
 tqdm
-faiss
+faiss-cpu
