@@ -23,7 +23,7 @@ def join(source_dir, prefix, dest_file, read_size):
         input_file.close()
     output_file.close()
 
-st.title('Thotica Search Experimental')
+st.title('Thothica Search Experimental')
 
 if 'docstore.json' not in os.listdir('prod_index') or 'vector_store.json' not in os.listdir('prod_index'):
     with st.spinner('Preparing Index'):
